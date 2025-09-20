@@ -12,6 +12,7 @@ class InvitationCreate(BaseModel):
 class InvitationRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: UUID
+    token: str
     email: EmailStr
     status: str
     expires_at: datetime

@@ -86,7 +86,6 @@ async def employee_role(db_session: AsyncSession) -> Role:
 async def admin_user(db_session: AsyncSession, default_tenant: Tenant, admin_role: Role) -> User:
     user = User(
         email="admin@test.com",
-        hashed_password="fake_password",
         tenant_id=default_tenant.id,
     )
     user.roles.append(admin_role)
