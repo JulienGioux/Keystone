@@ -30,7 +30,6 @@ async def test_register_with_valid_invitation(
     # 2. Register user with the invitation token
     registration_data = {
         "email": email_to_invite,
-        "password": "a_strong_password",
     }
     response = await client.post(
         f"/api/v1/users/register-with-invitation/{invitation_token}",
