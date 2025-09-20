@@ -15,7 +15,6 @@ async def get_current_user() -> User | None:
 
 router = APIRouter()
 
-# I'll add a dummy endpoint so the router is valid
 @router.get("/")
 async def get_invitations():
     return []
