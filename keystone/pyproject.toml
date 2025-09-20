@@ -34,9 +34,3 @@ select = ["E", "F", "W", "I", "UP"]
 [tool.mypy]
 strict = true
 namespace_packages = true
-
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "-ra -q --cov=src/keystone --cov-report=term-missing"
-testpaths = ["tests"]
-anyio_backend = "asyncio"
