@@ -10,6 +10,7 @@ from fastapi import Header
 
 from src.keystone.main import app
 from src.keystone.core.db import Base
+from src.keystone.core.security import get_password_hash
 from src.keystone.models.tenant import Tenant
 from src.keystone.models.role import Role
 from src.keystone.models.user import User
@@ -86,6 +87,7 @@ async def employee_role(db_session: AsyncSession) -> Role:
 async def admin_user(db_session: AsyncSession, default_tenant: Tenant, admin_role: Role) -> User:
     user = User(
         email="admin@test.com",
+        hashed_password=get_password_hash("admin_password"),
         tenant_id=default_tenant.id,
     )
     user.roles.append(admin_role)

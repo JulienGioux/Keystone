@@ -16,6 +16,7 @@ pydantic = {extras = ["email"], version = "^2.7.1"}
 pydantic-settings = "^2.2.1"
 asyncpg = "^0.29.0"
 aiosqlite = "^0.20.0"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.1"
