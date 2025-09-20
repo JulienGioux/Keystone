@@ -1,8 +1,7 @@
 import secrets
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.keystone.models.invitation import Invitation
@@ -18,19 +17,9 @@ async def create(
         role_id=invitation.role_id,
         tenant_id=tenant_id,
         token=token,
+        expires_at=datetime.now(timezone.utc) + timedelta(days=7),
     )
     db.add(db_invitation)
     await db.commit()
     await db.refresh(db_invitation)
     return db_invitation
-
-
-async def get_by_token(db: AsyncSession, *, token: str) -> Invitation | None:
-    statement = (
-        select(Invitation)
-        .where(Invitation.token == token)
-        .where(Invitation.status == "pending")
-        .where(Invitation.expires_at > datetime.now(timezone.utc))
-    )
-    result = await db.execute(statement)
-    return result.scalar_one_or_none()

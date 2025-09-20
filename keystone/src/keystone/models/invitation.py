@@ -3,7 +3,6 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
 
 from ..core.db import Base
 
@@ -22,5 +21,4 @@ class Invitation(Base):
         default=lambda: datetime.now(timezone.utc) + timedelta(days=7),
     )
     role_id = Column(UUID(as_uuid=True), ForeignKey("roles.id"), nullable=False)
-    role = relationship("Role")
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
