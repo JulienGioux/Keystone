@@ -10,6 +10,7 @@ from ..core.db import Base
 class Invitation(Base):
     __tablename__ = "invitations"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    token = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, nullable=False)
     status = Column(
         String, nullable=False, default="pending"

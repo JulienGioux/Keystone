@@ -11,6 +11,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.keystone.core.db import Base
+from src.keystone.models.invitation import Invitation
+from src.keystone.models.role import Role
+from src.keystone.models.tenant import Tenant
+from src.keystone.models.user import User
 
 config = context.config
 if config.config_file_name is not None:

@@ -17,3 +17,9 @@ async def test_create_invitation_as_admin(
     assert (
         response.status_code == 201
     ), f"Expected 201, got {response.status_code}: {response.text}"
+
+    data = response.json()
+    assert data["email"] == email_to_invite
+    assert data["status"] == "pending"
+    assert "id" in data
+    assert data["role_id"] == str(default_role_id)
