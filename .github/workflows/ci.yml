@@ -16,7 +16,6 @@ jobs:
           POSTGRES_USER: user
           POSTGRES_PASSWORD: password
           POSTGRES_DB: keystone_db_test
-        # This is the critical missing piece
         ports:
           - 5432
         options: >-
