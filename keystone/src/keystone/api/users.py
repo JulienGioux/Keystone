@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.keystone.crud import invitations as invitations_crud
 from src.keystone.crud import users as users_crud
-from src.keystone.api.invitations import get_db
+from src.keystone.api.dependencies import get_db
 from src.keystone.schemas.user import User, UserCreate
 
 router = APIRouter()

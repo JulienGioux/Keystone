@@ -1,30 +1,12 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.keystone.core.db import AsyncSessionLocal
+from src.keystone.api.dependencies import get_current_user, get_db
 from src.keystone.crud import invitations as crud
 from src.keystone.models.user import User
 from src.keystone.schemas.invitation import InvitationCreate, InvitationRead
-
-
-async def get_db() -> AsyncSession:
-    async with AsyncSessionLocal() as session:
-        yield session
-
-
-async def get_current_user(
-    db: AsyncSession = Depends(get_db),
-    x_test_user_id: str | None = Header(None, alias="X-Test-User-Id"),
-) -> User:
-    if not x_test_user_id:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    user = await db.get(User, UUID(x_test_user_id))
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
-
 
 router = APIRouter()
 
