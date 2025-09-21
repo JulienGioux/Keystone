@@ -1,5 +1,4 @@
 name: Keystone CI
-
 on:
   push:
     branches: [ main ]
@@ -9,24 +8,46 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: keystone_db_test
+        # This is the critical missing piece
+        ports:
+          - 5432
+        options: >-
+          --health-cmd "pg_isready -U user"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Start services
-        run: docker compose up -d --build
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
-      - name: Wait for database to be ready
-        run: |
-          until docker compose exec -T db pg_isready --username=keystone; do
-            sleep 1
-          done
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+
+      - name: Install dependencies
+        working-directory: ./keystone
+        run: poetry install --no-root
 
       - name: Run database migrations
-        run: docker compose exec -T api poetry run alembic upgrade head
+        working-directory: ./keystone
+        env:
+          DATABASE_URL: 'postgresql+asyncpg://user:password@localhost:${{ job.services.postgres.ports[5432] }}/keystone_db_test'
+        run: poetry run alembic upgrade head
 
       - name: Run tests
-        run: docker compose exec -T api poetry run pytest
-
-      - name: Stop services
-        if: always()
-        run: docker compose down
+        working-directory: ./keystone
+        env:
+          DATABASE_URL: 'postgresql+asyncpg://user:password@localhost:${{ job.services.postgres.ports[5432] }}/keystone_db_test'
+        run: poetry run pytest
