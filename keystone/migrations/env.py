@@ -1,28 +1,35 @@
-import asyncio
-import sys
 from logging.config import fileConfig
-from pathlib import Path
+import os
+import asyncio
+
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy import pool
 
 from alembic import context
-from sqlalchemy import pool
-from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
+# Import Base and all models for autogenerate to work
 from src.keystone.core.db import Base
+from src.keystone.models import *
+
+# Get DATABASE_URL from environment, the single source of truth
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("Please set the DATABASE_URL environment variable")
 
 config = context.config
+
+# Set the sqlalchemy.url in the config object from our environment variable
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
+
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
 target_metadata = Base.metadata
 
-
 def run_migrations_offline() -> None:
-    db_url = context.get_x_argument(as_dictionary=True).get("db_url")
-    url = db_url or config.get_main_option("sqlalchemy.url")
+    """Run migrations in 'offline' mode."""
     context.configure(
-        url=url,
+        url=DATABASE_URL,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -30,32 +37,22 @@ def run_migrations_offline() -> None:
     with context.begin_transaction():
         context.run_migrations()
 
-
-def do_run_migrations(connection: Connection) -> None:
+def do_run_migrations(connection):
+    """Helper function to run the migrations."""
     context.configure(connection=connection, target_metadata=target_metadata)
     with context.begin_transaction():
         context.run_migrations()
 
+async def run_migrations_online() -> None:
+    """Run migrations in 'online' mode."""
+    connectable = create_async_engine(DATABASE_URL, poolclass=pool.NullPool)
 
-async def run_async_migrations() -> None:
-    db_url = context.get_x_argument(as_dictionary=True).get("db_url")
-    if db_url:
-        config.set_main_option("sqlalchemy.url", db_url)
-    connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
+
     await connectable.dispose()
-
-
-def run_migrations_online() -> None:
-    asyncio.run(run_async_migrations())
-
 
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    run_migrations_online()
+    asyncio.run(run_migrations_online())
