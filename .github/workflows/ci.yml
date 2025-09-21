@@ -24,19 +24,27 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+    
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+    
       - name: Install Poetry
         uses: snok/install-poetry@v1
+    
       - name: Install dependencies
+        working-directory: ./keystone
         run: poetry install --no-root
+    
       - name: Run database migrations
+        working-directory: ./keystone
         env:
           DATABASE_URL: postgresql+asyncpg://user:password@localhost:${{ job.services.postgres.ports[5432] }}/keystone_db_test
         run: poetry run alembic upgrade head
+    
       - name: Run tests
+        working-directory: ./keystone
         env:
           DATABASE_URL: postgresql+asyncpg://user:password@localhost:${{ job.services.postgres.ports[5432] }}/keystone_db_test
         run: poetry run pytest
