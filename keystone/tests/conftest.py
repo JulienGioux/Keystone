@@ -10,13 +10,13 @@ from fastapi import Header
 
 from src.keystone.main import app
 from src.keystone.core.db import Base
+from src.keystone.core.config import settings
 from src.keystone.models.tenant import Tenant
 from src.keystone.models.role import Role
 from src.keystone.models.user import User
 from src.keystone.api.dependencies import get_db, get_current_user
 
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
-engine = create_async_engine(TEST_DATABASE_URL)
+engine = create_async_engine(settings.DATABASE_URL)
 TestingSessionLocal = sessionmaker(
     autocommit=False, autoflush=False, bind=engine, class_=AsyncSession, expire_on_commit=False
 )
