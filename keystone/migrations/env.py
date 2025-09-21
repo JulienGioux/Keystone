@@ -1,3 +1,5 @@
+import sys
+from pathlib import Path
 from logging.config import fileConfig
 import os
 import asyncio
@@ -6,6 +8,10 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy import pool
 
 from alembic import context
+
+# Add the project root directory to the Python path
+# This allows us to import from 'src'
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 # Import Base and all models for autogenerate to work
 from src.keystone.core.db import Base
