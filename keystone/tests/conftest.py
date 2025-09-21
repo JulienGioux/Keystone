@@ -13,7 +13,7 @@ from src.keystone.core.db import Base
 from src.keystone.models.tenant import Tenant
 from src.keystone.models.role import Role
 from src.keystone.models.user import User
-from src.keystone.api.invitations import get_db, get_current_user
+from src.keystone.api.dependencies import get_db, get_current_user
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 engine = create_async_engine(TEST_DATABASE_URL)
@@ -50,13 +50,7 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
         yield db_session
 
-    async def override_get_current_user(x_test_user_id: str | None = Header(None, alias="X-Test-User-Id")) -> User | None:
-        if not x_test_user_id:
-            return None
-        return await db_session.get(User, UUID(x_test_user_id))
-
     app.dependency_overrides[get_db] = override_get_db
-    app.dependency_overrides[get_current_user] = override_get_current_user
     async with AsyncClient(app=app, base_url="http://test") as c:
         yield c
     app.dependency_overrides.clear()
@@ -96,6 +90,23 @@ async def admin_user(db_session: AsyncSession, default_tenant: Tenant, admin_rol
 @pytest.fixture
 def admin_user_headers(admin_user: User) -> dict[str, str]:
     return {"X-Test-User-Id": str(admin_user.id)}
+
+@pytest.fixture(scope="function")
+async def employee_user(db_session: AsyncSession, default_tenant: Tenant, employee_role: Role) -> User:
+    user = User(
+        email="employee@test.com",
+        tenant_id=default_tenant.id,
+    )
+    user.roles.append(employee_role)
+    db_session.add(user)
+    await db_session.commit()
+    return user
+
+
+@pytest.fixture
+def employee_user_headers(employee_user: User) -> dict[str, str]:
+    return {"X-Test-User-Id": str(employee_user.id)}
+
 
 @pytest.fixture
 def default_role_id(employee_role: Role) -> UUID:

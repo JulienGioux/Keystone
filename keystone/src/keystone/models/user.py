@@ -21,3 +21,4 @@ class User(Base):
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
     tenant = relationship("Tenant", back_populates="users")
     roles = relationship("Role", secondary=user_role_association)
+    team_memberships = relationship("TeamMembership", back_populates="user")
