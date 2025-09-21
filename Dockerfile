@@ -1,27 +1,26 @@
-# Use an official Python runtime as a parent image
+# 1. Base Image
 FROM python:3.11-slim
-
-# Set environment variables
+# 2. Set Environment Variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# Set work directory
+# 3. Set Work Directory
 WORKDIR /app
 
-# Install poetry
+# 4. Install Poetry
 RUN pip install poetry
 
-# Copy poetry dependency files
-COPY poetry.lock pyproject.toml /app/
+# 5. Copy poetry dependency files from the 'keystone' subdirectory
+COPY keystone/poetry.lock keystone/pyproject.toml /app/
 
-# Install dependencies
-RUN poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi
+# 6. Install dependencies
+RUN poetry config virtualenvs.create false && poetry install --no-root --no-dev
 
-# Copy the rest of the application
-COPY . /app/
+# 7. Copy application code from the 'keystone/src' subdirectory
+COPY keystone/src /app/src
 
-# Expose the port the app runs on
+# 8. Expose port
 EXPOSE 8000
 
-# Run the application
+# 9. Command to run
 CMD ["uvicorn", "src.keystone.main:app", "--host", "0.0.0.0", "--port", "8000"]
