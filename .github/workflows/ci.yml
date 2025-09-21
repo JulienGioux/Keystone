@@ -40,11 +40,11 @@ jobs:
       - name: Run database migrations
         working-directory: ./keystone
         env:
-          DATABASE_URL: postgresql+asyncpg://user:password@localhost:${{ job.services.postgres.ports[5432] }}/keystone_db_test
+          DATABASE_URL: 'postgresql+asyncpg://user:password@localhost:${{ job.services.postgres.ports[5432] }}/keystone_db_test'
         run: poetry run alembic upgrade head
-    
+        
       - name: Run tests
         working-directory: ./keystone
         env:
-          DATABASE_URL: postgresql+asyncpg://user:password@localhost:${{ job.services.postgres.ports[5432] }}/keystone_db_test
+          DATABASE_URL: 'postgresql+asyncpg://user:password@localhost:${{ job.services.postgres.ports[5432] }}/keystone_db_test'
         run: poetry run pytest
