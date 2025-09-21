@@ -16,35 +16,37 @@ jobs:
           POSTGRES_USER: user
           POSTGRES_PASSWORD: password
           POSTGRES_DB: keystone_db_test
+        # The health check now includes the user, which is critical.
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U user"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-    
+
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-    
+
       - name: Install Poetry
         uses: snok/install-poetry@v1
-    
+
       - name: Install dependencies
         working-directory: ./keystone
         run: poetry install --no-root
-    
+
       - name: Run database migrations
         working-directory: ./keystone
+        # The DATABASE_URL correctly uses localhost and the dynamic port.
         env:
-          DATABASE_URL: 'postgresql+asyncpg://user:password@postgres:5432/keystone_db_test'
+          DATABASE_URL: 'postgresql+asyncpg://user:password@localhost:${{ job.services.postgres.ports[5432] }}/keystone_db_test'
         run: poetry run alembic upgrade head
-        
+
       - name: Run tests
         working-directory: ./keystone
         env:
-          DATABASE_URL: 'postgresql+asyncpg://user:password@postgres:5432/keystone_db_test'
+          DATABASE_URL: 'postgresql+asyncpg://user:password@localhost:${{ job.services.postgres.ports[5432] }}/keystone_db_test'
         run: poetry run pytest
